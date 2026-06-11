@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* Dark mode is driven by next-themes via a `class` on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens. Neutral foundation + a single restrained accent.
+ * Light and dark are defined together so every surface has both.
+ */
+:root {
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.21 0.01 270);
+  --muted: oklch(0.55 0.01 270);
+  --border: oklch(0.92 0.005 270);
+  --card: oklch(1 0 0);
+  --accent: oklch(0.55 0.16 250); /* calm blue */
+  --accent-foreground: oklch(0.99 0 0);
+}
+
+.dark {
+  --background: oklch(0.17 0.01 270);
+  --foreground: oklch(0.95 0.01 270);
+  --muted: oklch(0.65 0.01 270);
+  --border: oklch(0.28 0.01 270);
+  --card: oklch(0.21 0.01 270);
+  --accent: oklch(0.7 0.14 250);
+  --accent-foreground: oklch(0.17 0.01 270);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Respect users who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
