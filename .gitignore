@@ -61,5 +61,8 @@ backend/*.zip
 *.tfstate.*
 crash.log
 *.tfplan
+# saved plan files may contain sensitive variable values
+tfplan
+**/tfplan
 # keep the lock file committed:
 !**/.terraform.lock.hcl
