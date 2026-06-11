@@ -1,29 +1,31 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
+import { useState } from "react";
 import { Send } from "lucide-react";
-import { submitContact, type ContactState } from "@/app/actions/contact";
+import { submitContact, type ContactState } from "@/lib/contact-api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const initialState: ContactState = { status: "idle" };
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-      {pending ? "Sending…" : "Send message"}
-      <Send className="h-4 w-4" aria-hidden />
-    </Button>
-  );
-}
 
 const fieldClass =
   "w-full rounded-md border border-border bg-background px-3 py-2 text-sm transition-colors placeholder:text-muted focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40";
 
 export function ContactForm() {
-  const [state, formAction] = useActionState(submitContact, initialState);
+  const [state, setState] = useState<ContactState>({ status: "idle" });
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    setPending(true);
+    const result = await submitContact({
+      name: String(formData.get("name") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      message: String(formData.get("message") ?? ""),
+      company: String(formData.get("company") ?? ""), // honeypot
+    });
+    setPending(false);
+    setState(result);
+  }
 
   if (state.status === "success") {
     return (
@@ -37,7 +39,7 @@ export function ContactForm() {
   }
 
   return (
-    <form action={formAction} className="w-full max-w-lg space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-4" noValidate>
       {/* Honeypot: visually hidden, off the tab order. */}
       <div aria-hidden className="absolute left-[-9999px]">
         <label htmlFor="company">Company</label>
@@ -80,7 +82,10 @@ export function ContactForm() {
         </p>
       ) : null}
 
-      <SubmitButton />
+      <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+        {pending ? "Sending…" : "Send message"}
+        <Send className="h-4 w-4" aria-hidden />
+      </Button>
     </form>
   );
 }

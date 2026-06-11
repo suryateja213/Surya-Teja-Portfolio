@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { site } from "@/content/site";
 import { getProjectSlugs } from "@/content/projects";
 
+// Required for `output: export` — generate sitemap.xml at build time.
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const home: MetadataRoute.Sitemap[number] = {
     url: site.url,
