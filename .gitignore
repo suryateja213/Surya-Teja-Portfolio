@@ -66,3 +66,4 @@ tfplan
 **/tfplan
 # keep the lock file committed:
 !**/.terraform.lock.hcl
+infra/terraform/modules/lambda_fastapi/placeholder.zip
