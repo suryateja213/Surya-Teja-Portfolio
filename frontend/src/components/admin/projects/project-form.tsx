@@ -49,7 +49,9 @@ export function ProjectForm({ initial, submitting, onSubmit }: Props) {
       <div>
         <Label htmlFor="slug">Slug</Label>
         <Input id="slug" readOnly={isEdit} {...register("slug")} />
-        {isEdit && <p className="text-muted mt-1 text-xs">Slug can't be changed after creation.</p>}
+        {isEdit && (
+          <p className="text-muted mt-1 text-xs">Slug can&apos;t be changed after creation.</p>
+        )}
         {fieldError(errors.slug?.message)}
       </div>
 
