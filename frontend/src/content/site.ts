@@ -10,7 +10,7 @@ export const site = {
   tagline:
     "I build distributed, event-driven backends that stay fast and observable under real load.",
   // Used in <title> templates and structured data.
-  url: "https://suryakommuguri.com",
+  url: "https://kommugurisuryateja.com",
   location: "Tempe, AZ",
   email: "surya.t@techsmail.com",
   // Longer description for meta tags (~150–160 chars).
