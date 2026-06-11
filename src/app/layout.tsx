@@ -51,6 +51,12 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* If JS is disabled, the hero's motion never resolves — force it visible. */}
+        <noscript>
+          <style>{`#main [style*="opacity"]{opacity:1!important;filter:none!important;transform:none!important}`}</style>
+        </noscript>
+      </head>
       <body className="flex min-h-full flex-col">
         <ThemeProvider
           attribute="class"
