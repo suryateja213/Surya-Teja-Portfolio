@@ -28,7 +28,8 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     setUnauthorizedHandler(() => {
-      if (pathname !== "/admin/login") router.replace("/admin/login");
+      // trailingSlash:true → pathname may be "/admin/login/"; normalize.
+      if (pathname.replace(/\/$/, "") !== "/admin/login") router.replace("/admin/login");
     });
     return () => setUnauthorizedHandler(null);
   }, [router, pathname]);

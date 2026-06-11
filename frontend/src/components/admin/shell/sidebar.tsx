@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { navItems } from "./sidebar-nav";
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
+  const pathname = usePathname().replace(/\/$/, "") || "/admin";
 
   return (
     <nav className="flex flex-col gap-1">
