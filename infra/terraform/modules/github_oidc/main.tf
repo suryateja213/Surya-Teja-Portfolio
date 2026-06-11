@@ -71,9 +71,14 @@ data "aws_iam_policy_document" "deploy" {
   }
 
   statement {
-    sid       = "BackendLambdaUpdate"
-    effect    = "Allow"
-    actions   = ["lambda:UpdateFunctionCode", "lambda:GetFunction"]
+    sid    = "BackendLambdaUpdate"
+    effect = "Allow"
+    actions = [
+      "lambda:UpdateFunctionCode",
+      "lambda:GetFunction",
+      # `aws lambda wait function-updated` polls this:
+      "lambda:GetFunctionConfiguration",
+    ]
     resources = [var.lambda_function_arn]
   }
 }
