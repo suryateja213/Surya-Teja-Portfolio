@@ -4,9 +4,9 @@
 
 import { existsSync } from "node:fs";
 
-if (!existsSync("package.json")) process.exit(0);
+if (!existsSync("frontend/package.json")) process.exit(0);
 
 process.stderr.write(
-  "\n[quality] Before shipping, confirm: npm run typecheck && npm run lint && npm run build — and check light/dark + 375/768/1280.\n"
+  "\n[quality] Before shipping the frontend, confirm: cd frontend && npm run typecheck && npm run lint && npm run build — and check light/dark + 375/768/1280.\n"
 );
 process.exit(0);

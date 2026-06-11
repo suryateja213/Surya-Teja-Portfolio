@@ -1,0 +1,11 @@
+# Runtime dependencies (installed into the Lambda zip).
+# Pin to ranges that resolve to wheels compatible with the Lambda Python 3.12 runtime.
+fastapi==0.115.6
+mangum==0.19.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+boto3==1.35.90
+python-jose[cryptography]==3.3.0
+bcrypt==4.2.1
+python-ulid==3.0.0
+email-validator==2.2.0
