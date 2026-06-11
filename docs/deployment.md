@@ -58,21 +58,24 @@ sitting in "waiting".
 > on `main` and the `prod` environment. Deploys from other branches/forks are
 > rejected by AWS.
 
-## Deploy model: CI/CD only
+## Deploy model: CI/CD only, single workflow
 
 **Deployment happens exclusively through GitHub Actions on push to `main`.**
 Do not deploy manually — running `aws` deploy commands locally while the
-workflows also deploy causes double-deploys and a pile-up of redundant runs.
+workflow also deploys causes double-deploys and redundant runs.
 
-Normal flow:
+There is **one** workflow: `.github/workflows/deploy.yml`. It runs on push to
+`main` (solo repo — no PR checks) and is path-filtered, so one push = one
+Actions run with only the relevant jobs:
 
-1. Branch → make changes → open a PR. CI runs lint/typecheck/test.
-2. Merge to `main`. The path-filtered workflows deploy automatically:
-   - `frontend/**` → build static export → S3 sync → CloudFront invalidation
-   - `backend/**` → package zip → `lambda update-function-code` → health smoke test
-   - `infra/**` → `terraform apply`
-3. To redeploy without a code change, trigger manually:
-   `gh workflow run frontend-deploy.yml --ref main` (or `backend-deploy.yml`).
+- `frontend/**` changed → `frontend-ci` (lint/typecheck/build) → `frontend-deploy`
+  (S3 sync + CloudFront invalidation)
+- `backend/**` changed → `backend-ci` (ruff/mypy/pytest) → `backend-deploy`
+  (`lambda update-function-code` + health smoke test)
+- `infra/**` changed → `terraform` (fmt/validate/apply)
+
+Normal flow: make changes → commit → push to `main` → the right jobs run.
+To redeploy without a code change: `gh workflow run deploy.yml --ref main`.
 
 ## Manual deploy (emergency fallback only)
 
