@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     admin_email: str = "admin@example.com"
     admin_password_hash: str = ""
 
+    # Session cookie (admin JWT delivered as an httpOnly cookie).
+    # Cross-subdomain in prod: domain ".kommugurisuryateja.com" so the apex-hosted
+    # dashboard sends it to the api. subdomain; SameSite=None requires Secure.
+    # Local dev omits the domain and uses Lax (Domain=localhost is rejected).
+    cookie_name: str = "admin_session"
+    cookie_domain: str | None = None
+    cookie_secure: bool = True
+    cookie_samesite: str = "none"
+
     # CORS — comma-separated origins in the env var, parsed to a list.
     # NoDecode disables pydantic-settings' JSON pre-parse so the validator below
     # can split the plain comma-separated string.

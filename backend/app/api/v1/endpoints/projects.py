@@ -1,7 +1,7 @@
 from botocore.exceptions import ClientError
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.deps import CurrentAdmin
+from app.api.deps import CurrentAdmin, require_same_origin
 from app.schemas.project import ProjectCreate, ProjectRead, ProjectUpdate
 from app.services import project_service
 
@@ -26,6 +26,7 @@ def get_project(slug: str) -> ProjectRead:
     response_model=ProjectRead,
     status_code=status.HTTP_201_CREATED,
     summary="Create a project (admin)",
+    dependencies=[Depends(require_same_origin)],
 )
 def create_project(payload: ProjectCreate, _admin: CurrentAdmin) -> ProjectRead:
     try:
@@ -39,7 +40,12 @@ def create_project(payload: ProjectCreate, _admin: CurrentAdmin) -> ProjectRead:
         raise
 
 
-@router.put("/projects/{slug}", response_model=ProjectRead, summary="Update a project (admin)")
+@router.put(
+    "/projects/{slug}",
+    response_model=ProjectRead,
+    summary="Update a project (admin)",
+    dependencies=[Depends(require_same_origin)],
+)
 def update_project(slug: str, payload: ProjectUpdate, _admin: CurrentAdmin) -> ProjectRead:
     updated = project_service.update_project(slug, payload)
     if updated is None:
@@ -51,6 +57,7 @@ def update_project(slug: str, payload: ProjectUpdate, _admin: CurrentAdmin) -> P
     "/projects/{slug}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a project (admin)",
+    dependencies=[Depends(require_same_origin)],
 )
 def delete_project(slug: str, _admin: CurrentAdmin) -> None:
     if not project_service.delete_project(slug):

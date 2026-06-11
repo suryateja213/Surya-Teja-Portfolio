@@ -18,8 +18,10 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
+    allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    # With credentials, the CORS spec forbids "*" for headers — list explicitly.
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 app.include_router(api_router)
