@@ -47,18 +47,37 @@ and authenticate to AWS via the OIDC roles above. Configure these in the repo:
 | `TF_VAR_JWT_SECRET` | the JWT signing secret (32-byte hex) |
 | `TF_VAR_ADMIN_PASSWORD_HASH` | bcrypt hash of the admin password |
 
-### `prod` Environment (Settings → Environments → New environment: `prod`)
+### `prod` Environment (Settings → Environments → `prod`)
 
-- Add **required reviewers** (yourself) — this gates `terraform apply` and the
-  deploy jobs behind a manual approval.
+The `prod` environment exists (it scopes the secrets) but has **no required
+reviewers** — deploys run to completion automatically. This is deliberate for a
+solo project: there's no second reviewer, and a manual gate just left runs
+sitting in "waiting".
 
 > The OIDC trust policy is scoped to `repo:suryateja213/Surya-Teja-Portfolio`
 > on `main` and the `prod` environment. Deploys from other branches/forks are
 > rejected by AWS.
 
-## Manual deploy (fallback / first-time)
+## Deploy model: CI/CD only
 
-Run with the domain-owning profile: `$env:AWS_PROFILE = "suryatejaportfolio"`.
+**Deployment happens exclusively through GitHub Actions on push to `main`.**
+Do not deploy manually — running `aws` deploy commands locally while the
+workflows also deploy causes double-deploys and a pile-up of redundant runs.
+
+Normal flow:
+
+1. Branch → make changes → open a PR. CI runs lint/typecheck/test.
+2. Merge to `main`. The path-filtered workflows deploy automatically:
+   - `frontend/**` → build static export → S3 sync → CloudFront invalidation
+   - `backend/**` → package zip → `lambda update-function-code` → health smoke test
+   - `infra/**` → `terraform apply`
+3. To redeploy without a code change, trigger manually:
+   `gh workflow run frontend-deploy.yml --ref main` (or `backend-deploy.yml`).
+
+## Manual deploy (emergency fallback only)
+
+Only if Actions is down. Run with the domain-owning profile:
+`$env:AWS_PROFILE = "suryatejaportfolio"`.
 
 ### Backend
 
