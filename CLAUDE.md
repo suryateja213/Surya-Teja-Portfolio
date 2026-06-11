@@ -8,6 +8,10 @@ Personal portfolio website for job hunting. The audience is **recruiters, hiring
 
 **This is NOT a resume.** Do not build a chronological experience timeline or dump job history. Lead with **skills, featured projects, technical strengths, and problem-solving ability**. Sections, in priority order:
 
+> **Do not add, ever (unless the user explicitly reverses this):**
+> - A résumé/CV **download or PDF**. The user tailors their résumé per job description, so a static file would always be stale. The site is the evergreen version; the résumé travels with each application.
+> - A **professional experience / work-history / timeline** section.
+
 1. Hero — name, one-line positioning, primary CTA
 2. Featured projects — case studies that show depth, not screenshots-and-links
 3. Skills / technical strengths — grouped, scannable, honest
