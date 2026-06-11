@@ -6,6 +6,13 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+class LoginResult(BaseModel):
+    """Login response body. The JWT travels in an httpOnly cookie, not here."""
+
+    status: str = "ok"
+
+
+class MeResponse(BaseModel):
+    """Current admin identity, derived from the session cookie."""
+
+    email: str

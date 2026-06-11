@@ -45,4 +45,14 @@ def contact_pk(contact_id: str) -> str:
     return f"CONTACT#{contact_id}"
 
 
+def post_pk(slug: str) -> str:
+    """Reserved for the future blog/posts entity (GSI1PK="POST")."""
+    return f"POST#{slug}"
+
+
+def content_pk(key: str) -> str:
+    """Singleton content blobs, e.g. CONTENT#skills, CONTENT#about."""
+    return f"CONTENT#{key}"
+
+
 META_SK = "META"

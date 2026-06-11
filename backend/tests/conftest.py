@@ -9,6 +9,7 @@ from moto import mock_aws
 TABLE_NAME = "test-portfolio"
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "correct horse battery staple"
+ALLOWED_ORIGIN = "http://localhost:3000"
 
 
 @pytest.fixture(autouse=True)
@@ -21,7 +22,11 @@ def _env() -> Iterator[None]:
     os.environ["JWT_SECRET"] = "test-secret"
     os.environ["ADMIN_EMAIL"] = ADMIN_EMAIL
     os.environ["ADMIN_PASSWORD_HASH"] = hash_password(ADMIN_PASSWORD)
-    os.environ["ALLOWED_ORIGINS"] = "http://localhost:3000"
+    os.environ["ALLOWED_ORIGINS"] = ALLOWED_ORIGIN
+    # Cookie attributes that work with the in-process TestClient (no TLS).
+    os.environ["COOKIE_SECURE"] = "false"
+    os.environ["COOKIE_SAMESITE"] = "lax"
+    os.environ.pop("COOKIE_DOMAIN", None)
     os.environ.pop("DYNAMODB_ENDPOINT_URL", None)
 
     from app.core.config import get_settings
@@ -68,19 +73,24 @@ def dynamodb_table() -> Iterator[None]:
 
 @pytest.fixture
 def client(dynamodb_table: None) -> Iterator["object"]:
-    """A TestClient bound to the app with the mocked table available."""
+    """A TestClient with the mocked table and an allowed Origin on every request.
+
+    The Origin header satisfies the CSRF (require_same_origin) guard on mutations.
+    """
     from app.main import app
     from fastapi.testclient import TestClient
 
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"Origin": ALLOWED_ORIGIN}) as test_client:
         yield test_client
 
 
 @pytest.fixture
-def admin_token(client: "object") -> str:
+def admin_client(client: "object") -> "object":
+    """A client that has logged in — the session cookie is stored in its jar,
+    so subsequent admin requests authenticate automatically."""
     resp = client.post(  # type: ignore[attr-defined]
         "/v1/auth/login",
         json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
     )
     assert resp.status_code == 200
-    return str(resp.json()["access_token"])
+    return client

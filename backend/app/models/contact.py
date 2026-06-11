@@ -6,7 +6,7 @@ from typing import Any
 from ulid import ULID
 
 from app.db.dynamodb import META_SK, contact_pk
-from app.schemas.contact import ContactCreate, ContactRead
+from app.schemas.contact import ContactCreate, ContactDetail, ContactRead
 
 _GSI1PK_CONTACT = "CONTACT"
 
@@ -46,4 +46,19 @@ def item_to_contact(item: dict[str, Any]) -> ContactRead:
         email=str(item["email"]),
         message=str(item["message"]),
         created_at=str(item["createdAt"]),
+    )
+
+
+def item_to_contact_detail(item: dict[str, Any]) -> ContactDetail:
+    """Like item_to_contact but includes the stored request metadata."""
+    ip = item.get("ip")
+    user_agent = item.get("userAgent")
+    return ContactDetail(
+        id=str(item["id"]),
+        name=str(item["name"]),
+        email=str(item["email"]),
+        message=str(item["message"]),
+        created_at=str(item["createdAt"]),
+        ip=str(ip) if ip else None,
+        user_agent=str(user_agent) if user_agent else None,
     )

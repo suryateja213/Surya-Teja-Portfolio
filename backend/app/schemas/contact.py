@@ -21,6 +21,13 @@ class ContactRead(BaseModel):
     created_at: str
 
 
+class ContactDetail(ContactRead):
+    """Full submission incl. request metadata — admin detail view only."""
+
+    ip: str | None = None
+    user_agent: str | None = None
+
+
 class ContactResult(BaseModel):
     status: str = "success"
     message: str = "Thanks — I'll be in touch."
