@@ -3,7 +3,7 @@
 
 domain_name = "kommugurisuryateja.com"
 github_repo = "suryateja213/Surya-Teja-Portfolio"
-admin_email = "harshith.siddardha@gmail.com"
+admin_email = "kommugurisuryateja@gmail.com"
 
 region               = "us-east-1"
 table_name           = "surya-portfolio"
