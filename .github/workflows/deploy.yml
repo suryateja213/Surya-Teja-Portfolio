@@ -1,0 +1,206 @@
+name: Deploy
+
+# Single pipeline for the whole monorepo. Runs on push to main only (solo repo —
+# no PR gate). Path-filtered: each part is validated and deployed only when its
+# files change, so one push = one Actions run with the right jobs.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write # OIDC for AWS
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ---- what changed ----
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      infra: ${{ steps.filter.outputs.infra }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/deploy.yml'
+            backend:
+              - 'backend/**'
+              - '.github/workflows/deploy.yml'
+            infra:
+              - 'infra/**'
+              - '.github/workflows/deploy.yml'
+
+  # ---- frontend: validate then deploy ----
+  frontend-ci:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ vars.API_BASE_URL }}
+
+  frontend-deploy:
+    needs: frontend-ci
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ vars.API_BASE_URL }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      # Hashed assets: long, immutable cache.
+      - name: Sync hashed assets
+        run: |
+          aws s3 sync out/ "s3://${{ vars.FRONTEND_BUCKET }}" \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "*.html" --exclude "*.txt" --exclude "*.xml" --exclude "*.json"
+
+      # HTML + metadata: revalidate every time so updates show immediately.
+      - name: Sync HTML and metadata
+        run: |
+          aws s3 sync out/ "s3://${{ vars.FRONTEND_BUCKET }}" \
+            --delete \
+            --cache-control "public,max-age=0,must-revalidate" \
+            --exclude "*" --include "*.html" --include "*.txt" --include "*.xml" --include "*.json"
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*"
+
+  # ---- backend: validate then deploy ----
+  backend-ci:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: mypy app
+      - run: pytest
+
+  backend-deploy:
+    needs: backend-ci
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Install runtime deps as Linux x86_64 wheels matching the Lambda runtime,
+      # then zip them with app/ at the archive root.
+      - name: Build deployment package
+        run: |
+          rm -rf build && mkdir -p build/pkg
+          pip install -r requirements.txt -t build/pkg \
+            --platform manylinux2014_x86_64 --implementation cp \
+            --python-version 3.12 --only-binary=:all: --upgrade
+          cp -r app build/pkg/app
+          find build/pkg -name '__pycache__' -type d -prune -exec rm -rf {} +
+          cd build/pkg && zip -qr ../function.zip . -x '*.pyc'
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Deploy to Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ vars.LAMBDA_FUNCTION_NAME }}" \
+            --zip-file fileb://build/function.zip
+          aws lambda wait function-updated \
+            --function-name "${{ vars.LAMBDA_FUNCTION_NAME }}"
+
+      - name: Smoke test
+        run: |
+          set -e
+          code=$(curl -s -o /dev/null -w "%{http_code}" "${{ vars.API_BASE_URL }}/v1/health")
+          echo "health -> $code"
+          test "$code" = "200"
+
+  # ---- infra: validate + apply ----
+  terraform:
+    needs: changes
+    if: needs.changes.outputs.infra == 'true'
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: infra/terraform/environments/prod
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.4"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_TERRAFORM_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - run: terraform fmt -check -recursive
+        working-directory: infra/terraform
+      - run: terraform init -input=false
+      - run: terraform validate
+      - name: Apply
+        run: terraform apply -input=false -auto-approve
+        env:
+          TF_VAR_jwt_secret: ${{ secrets.TF_VAR_JWT_SECRET }}
+          TF_VAR_admin_password_hash: ${{ secrets.TF_VAR_ADMIN_PASSWORD_HASH }}
