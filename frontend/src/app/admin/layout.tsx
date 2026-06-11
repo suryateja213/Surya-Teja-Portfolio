@@ -12,7 +12,8 @@ import { Toaster } from "@/components/ui/toaster";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [queryClient] = React.useState(makeQueryClient);
   const pathname = usePathname();
-  const isLogin = pathname === "/admin/login";
+  // trailingSlash:true means pathname can be "/admin/login/" — normalize it.
+  const isLogin = pathname.replace(/\/$/, "") === "/admin/login";
 
   return (
     <QueryClientProvider client={queryClient}>
