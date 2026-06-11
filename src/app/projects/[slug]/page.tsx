@@ -11,11 +11,7 @@ export function generateStaticParams(): Params[] {
   return getProjectSlugs().map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<Params>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params;
   const project = getProjectMeta(slug);
   if (!project) return {};
@@ -40,7 +36,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
     <article className="mx-auto w-full max-w-3xl px-6 py-20 sm:py-28">
       <Link
         href="/#projects"
-        className="inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-foreground"
+        className="text-muted hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Back to projects
@@ -48,7 +44,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
 
       <header className="mt-8">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{project.title}</h1>
-        <p className="mt-4 text-lg text-muted">{project.summary}</p>
+        <p className="text-muted mt-4 text-lg">{project.summary}</p>
 
         <ul className="mt-6 flex flex-wrap gap-2">
           {project.stack.map((tech) => (
@@ -65,7 +61,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
                 href={project.links.repo}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline"
+                className="text-accent inline-flex items-center gap-2 text-sm font-medium hover:underline"
               >
                 <Github className="h-4 w-4" aria-hidden />
                 Source
@@ -76,7 +72,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
                 href={project.links.demo}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline"
+                className="text-accent inline-flex items-center gap-1 text-sm font-medium hover:underline"
               >
                 Live demo
                 <ArrowUpRight className="h-4 w-4" aria-hidden />
@@ -86,7 +82,7 @@ export default async function ProjectPage({ params }: { params: Promise<Params> 
         ) : null}
       </header>
 
-      <div className="mt-12 border-t border-border pt-10">
+      <div className="border-border mt-12 border-t pt-10">
         <Body />
       </div>
     </article>

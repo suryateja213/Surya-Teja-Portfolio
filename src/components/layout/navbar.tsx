@@ -2,14 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { nav, site } from "@/content/site";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { useActiveSection } from "@/lib/use-active-section";
 import { cn } from "@/lib/utils";
+
+const sectionIds = nav.map((item) => item.href.replace("#", ""));
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const active = useActiveSection(isHome ? sectionIds : []);
+
+  // On the home page, anchors are in-page; elsewhere they jump to home + anchor.
+  const linkHref = (href: string) => (isHome ? href : `/${href}`);
+  const isActive = (href: string) => isHome && active === href.replace("#", "");
 
   return (
     <header className="border-border bg-background/80 sticky top-0 z-50 border-b backdrop-blur">
@@ -27,8 +38,12 @@ export function Navbar() {
           {nav.map((item) => (
             <Link
               key={item.href}
-              href={item.href}
-              className="text-muted hover:text-foreground rounded-md px-3 py-2 text-sm transition-colors"
+              href={linkHref(item.href)}
+              aria-current={isActive(item.href) ? "true" : undefined}
+              className={cn(
+                "hover:text-foreground rounded-md px-3 py-2 text-sm transition-colors",
+                isActive(item.href) ? "text-foreground" : "text-muted",
+              )}
             >
               {item.label}
             </Link>
@@ -65,9 +80,13 @@ export function Navbar() {
           {nav.map((item) => (
             <li key={item.href}>
               <Link
-                href={item.href}
+                href={linkHref(item.href)}
                 onClick={() => setOpen(false)}
-                className="text-muted hover:bg-card hover:text-foreground block rounded-md px-3 py-3 text-sm transition-colors"
+                aria-current={isActive(item.href) ? "true" : undefined}
+                className={cn(
+                  "hover:bg-card hover:text-foreground block rounded-md px-3 py-3 text-sm transition-colors",
+                  isActive(item.href) ? "text-foreground" : "text-muted",
+                )}
               >
                 {item.label}
               </Link>

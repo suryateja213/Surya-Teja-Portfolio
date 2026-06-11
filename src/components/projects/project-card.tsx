@@ -1,0 +1,49 @@
+import Link from "next/link";
+import { ArrowUpRight, Github } from "lucide-react";
+import type { ProjectMeta } from "@/content/projects";
+import { Badge } from "@/components/ui/badge";
+
+/** Shared project card used on the home grid and the /projects index. */
+export function ProjectCard({ project }: { project: ProjectMeta }) {
+  return (
+    <article className="group border-border bg-card hover:border-accent/50 relative flex h-full flex-col rounded-lg border p-6 transition-colors">
+      <div className="flex items-start justify-between gap-4">
+        <h3 className="text-lg font-semibold tracking-tight">
+          {/* Whole card is clickable via this stretched link. */}
+          <Link href={`/projects/${project.slug}`} className="after:absolute after:inset-0">
+            {project.title}
+          </Link>
+        </h3>
+        {project.links?.repo ? (
+          <a
+            href={project.links.repo}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${project.title} on GitHub`}
+            className="text-muted hover:text-foreground relative z-10 shrink-0 transition-colors"
+          >
+            <Github className="h-5 w-5" aria-hidden />
+          </a>
+        ) : null}
+      </div>
+
+      <p className="text-muted mt-3 flex-1 text-sm">{project.summary}</p>
+
+      <ul className="mt-5 flex flex-wrap gap-2">
+        {project.stack.map((tech) => (
+          <li key={tech}>
+            <Badge>{tech}</Badge>
+          </li>
+        ))}
+      </ul>
+
+      <span className="text-accent mt-5 inline-flex items-center gap-1 text-sm font-medium">
+        Read case study
+        <ArrowUpRight
+          className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+          aria-hidden
+        />
+      </span>
+    </article>
+  );
+}
