@@ -1,0 +1,33 @@
+---
+title: EHR Prescription Service
+summary: A high-uptime prescription and clinical-note service for an EHR platform, with a REST layer tuned for fast mobile clients and strict data-access controls.
+stack: ["Django", "PostgreSQL", "FHIR R4", "REST"]
+links:
+  repo: https://github.com/your-handle/ehr-prescription-service
+featured: true
+order: 3
+---
+
+## The problem
+
+A monolithic patient-record service coupled five downstream consumers behind
+shared state, and slow queries pushed API responses well past what mobile clients
+could tolerate. In a clinical setting, a sluggish or flaky prescription flow is
+not a cosmetic issue.
+
+## The approach
+
+I decoupled the downstream consumers behind a message queue so they no longer
+contended on the same records, then profiled and tuned the PostgreSQL indexes and
+queries behind the hottest endpoints. Adopting FHIR R4 made patient data
+interoperable with partner systems instead of locked into a bespoke shape.
+
+The discipline here was correctness first: every change had to preserve audit
+trails and access controls, so optimizations were validated against the same
+compliance constraints they shipped under.
+
+## The outcome
+
+- Average API response brought from **~420ms to ~95ms**
+- Processed **2M+ monthly prescriptions** at a **99.9% uptime SLA**
+- Patient data interoperable across partner hospital networks via FHIR R4

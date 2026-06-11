@@ -1,0 +1,32 @@
+---
+title: Device Telemetry Streaming Pipeline
+summary: An event-driven pipeline that ingests high-volume device telemetry and fans it out to downstream consumers without coupling them to the producer.
+stack: ["Python", "Apache Kafka", "Redis", "Kubernetes"]
+links:
+  repo: https://github.com/your-handle/telemetry-pipeline
+featured: true
+order: 1
+---
+
+## The problem
+
+Downstream services shared state through a single bottleneck. One slow consumer
+stalled the rest, and backpressure was impossible to reason about — a spike in
+one place degraded everything.
+
+## The approach
+
+I moved the system to a Kafka-based event log with independent consumer groups,
+so each consumer reads at its own pace and failures stay isolated. A Redis
+caching layer absorbed hot reads, and tuning async I/O kept tail latency flat
+under burst load.
+
+The key decision was trading immediate consistency for decoupling: consumers now
+work from the log rather than a shared store, which means a new consumer can be
+added without touching the producer or the others.
+
+## The outcome
+
+- Sustained **120K+ messages/sec** at **sub-100ms p99**
+- New consumers added with zero producer changes
+- Backpressure became observable and bounded instead of cascading

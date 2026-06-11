@@ -1,0 +1,33 @@
+---
+title: Service Observability Layer
+summary: A shared tracing and metrics layer across a fleet of platform services, built so on-call engineers can find the failing hop in minutes, not hours.
+stack: ["OpenTelemetry", "Datadog APM", "Grafana", "Python"]
+links:
+  repo: https://github.com/your-handle/observability-layer
+featured: true
+order: 2
+---
+
+## The problem
+
+Incidents were slow to diagnose. Traces stopped at service boundaries, so a
+request that crossed five services left five disconnected fragments. Alerts were
+threshold-based and noisy enough that the team had learned to ignore them.
+
+## The approach
+
+I instrumented distributed tracing end to end with OpenTelemetry and standardized
+span conventions across services, so a single trace follows a request through the
+whole system. Then I replaced threshold alerts with SLI/SLO-based signals
+surfaced in Grafana — alerting on user-visible symptoms rather than internal
+noise.
+
+The tradeoff was upfront discipline: shared conventions only pay off if every
+service follows them, which meant template code and review gates rather than
+letting each team instrument ad hoc.
+
+## The outcome
+
+- Mean time to detect on production incidents cut by **~52%**
+- Alert noise reduced by **~40%**
+- On-call engineers could pinpoint the failing hop from one trace

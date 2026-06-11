@@ -1,88 +1,74 @@
+import fs from "node:fs";
+import path from "node:path";
+import matter from "gray-matter";
+
 /**
- * Featured projects. Each entry is a self-contained case study source.
+ * Project case studies live as MDX files in `src/content/projects/<slug>.mdx`.
+ * Frontmatter carries the typed metadata used by cards, listings, SEO, and the
+ * sitemap. The MDX body is the case study, rendered on the detail page.
  *
- * The home page renders the summary fields (card view). The optional `caseStudy`
- * block is scaffolding for future `/projects/[slug]` detail pages — it is NOT
- * rendered yet, so leaving it undefined is fine.
- *
- * Rules for good entries: show problem → approach → impact. Prefer real numbers.
- * Replace placeholder links and confirm any metric before publishing.
+ * This module is server-only (it reads the filesystem). Import it from Server
+ * Components, `generateStaticParams`, `generateMetadata`, sitemap, etc. — never
+ * from a `"use client"` file.
  */
 
-export type Project = {
+export type ProjectMeta = {
   slug: string;
   title: string;
-  /** One line: what it is and why it's interesting. */
+  /** One line: what it is and why it's interesting. Used on cards + meta description. */
   summary: string;
   /** 3–6 tags, most important first. */
   stack: string[];
-  /** Optional outward links. Omit what you don't have. */
+  /** Optional outward links. */
   links?: {
     repo?: string;
     demo?: string;
   };
   /** Surface on the home grid. */
   featured: boolean;
-  /** Optional long-form content for a future detail page. Not rendered yet. */
-  caseStudy?: {
-    problem: string;
-    approach: string;
-    outcome: string;
-  };
+  /** Lower numbers sort first. */
+  order: number;
 };
 
-export const projects: Project[] = [
-  {
-    slug: "telemetry-streaming-pipeline",
-    title: "Device Telemetry Streaming Pipeline",
-    summary:
-      "An event-driven pipeline that ingests high-volume device telemetry and fans it out to downstream consumers without coupling them to the producer.",
-    stack: ["Python", "Apache Kafka", "Redis", "Kubernetes"],
-    links: { repo: "https://github.com/your-handle/telemetry-pipeline" },
-    featured: true,
-    caseStudy: {
-      problem:
-        "Downstream services shared state through a single bottleneck, so one slow consumer stalled the rest and made backpressure impossible to reason about.",
-      approach:
-        "Moved to a Kafka-based event log with independent consumer groups, added a Redis caching layer for hot reads, and tuned async I/O to keep tail latency flat under burst load.",
-      outcome:
-        "Sustained 120K+ messages/sec at sub-100ms p99, and new consumers could be added without touching the producer.",
-    },
-  },
-  {
-    slug: "service-observability-layer",
-    title: "Service Observability Layer",
-    summary:
-      "A shared tracing and metrics layer across a fleet of platform services, built so on-call engineers can find the failing hop in minutes, not hours.",
-    stack: ["OpenTelemetry", "Datadog APM", "Grafana", "Python"],
-    links: { repo: "https://github.com/your-handle/observability-layer" },
-    featured: true,
-    caseStudy: {
-      problem:
-        "Incidents were slow to diagnose because traces stopped at service boundaries and alerts were too noisy to trust.",
-      approach:
-        "Instrumented distributed tracing end to end with OpenTelemetry, standardized span conventions, and replaced threshold alerts with SLI/SLO-based signals surfaced in Grafana.",
-      outcome:
-        "Cut mean time to detect on production incidents by ~52% and reduced alert noise by ~40%.",
-    },
-  },
-  {
-    slug: "ehr-prescription-service",
-    title: "EHR Prescription Service",
-    summary:
-      "A high-uptime prescription and clinical-note service for an EHR platform, with a REST layer tuned for fast mobile clients and strict data-access controls.",
-    stack: ["Django", "PostgreSQL", "FHIR R4", "REST"],
-    links: { repo: "https://github.com/your-handle/ehr-prescription-service" },
-    featured: true,
-    caseStudy: {
-      problem:
-        "A monolithic patient-record service coupled five downstream consumers and slow queries pushed API responses well past acceptable mobile latency.",
-      approach:
-        "Decoupled consumers behind a message queue, tuned PostgreSQL indexes and queries, and adopted FHIR R4 to make patient data interoperable across partner systems.",
-      outcome:
-        "Brought average API response from ~420ms to ~95ms and processed 2M+ monthly prescriptions at a 99.9% uptime SLA.",
-    },
-  },
-];
+const PROJECTS_DIR = path.join(process.cwd(), "src/content/projects");
 
-export const featuredProjects = projects.filter((p) => p.featured);
+function readProjectFile(fileName: string): ProjectMeta {
+  const slug = fileName.replace(/\.mdx$/, "");
+  const raw = fs.readFileSync(path.join(PROJECTS_DIR, fileName), "utf8");
+  const { data } = matter(raw);
+
+  return {
+    slug,
+    title: String(data.title ?? slug),
+    summary: String(data.summary ?? ""),
+    stack: Array.isArray(data.stack) ? data.stack.map(String) : [],
+    links: data.links ?? undefined,
+    featured: Boolean(data.featured),
+    order: typeof data.order === "number" ? data.order : 999,
+  };
+}
+
+/** All projects, sorted by `order`. */
+export function getAllProjects(): ProjectMeta[] {
+  if (!fs.existsSync(PROJECTS_DIR)) return [];
+  return fs
+    .readdirSync(PROJECTS_DIR)
+    .filter((f) => f.endsWith(".mdx"))
+    .map(readProjectFile)
+    .sort((a, b) => a.order - b.order);
+}
+
+/** Projects flagged `featured`, for the home grid. */
+export function getFeaturedProjects(): ProjectMeta[] {
+  return getAllProjects().filter((p) => p.featured);
+}
+
+/** Single project's metadata, or null if the slug doesn't exist. */
+export function getProjectMeta(slug: string): ProjectMeta | null {
+  return getAllProjects().find((p) => p.slug === slug) ?? null;
+}
+
+/** Slugs for `generateStaticParams`. */
+export function getProjectSlugs(): string[] {
+  return getAllProjects().map((p) => p.slug);
+}

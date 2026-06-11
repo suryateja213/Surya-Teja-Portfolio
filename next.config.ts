@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Allow .mdx alongside .ts/.tsx pages and imports.
+  pageExtensions: ["ts", "tsx", "mdx"],
 };
 
-export default nextConfig;
+const withMDX = createMDX({
+  // Add remark/rehype plugins here if needed later (e.g. syntax highlighting).
+  options: {},
+});
+
+export default withMDX(nextConfig);
