@@ -44,8 +44,8 @@ module "lambda" {
   table_gsi_arn = module.dynamodb.gsi_arn
 
   environment = {
-    TABLE_NAME          = module.dynamodb.table_name
-    AWS_REGION          = var.region
+    TABLE_NAME = module.dynamodb.table_name
+    # AWS_REGION is a reserved Lambda env var (injected automatically) — do not set it.
     JWT_SECRET          = var.jwt_secret
     ADMIN_EMAIL         = var.admin_email
     ADMIN_PASSWORD_HASH = var.admin_password_hash
