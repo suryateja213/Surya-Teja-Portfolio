@@ -50,6 +50,8 @@ module "lambda" {
     ADMIN_EMAIL         = var.admin_email
     ADMIN_PASSWORD_HASH = var.admin_password_hash
     ALLOWED_ORIGINS     = "https://${var.domain_name},https://www.${var.domain_name}"
+    # Cross-subdomain session cookie: the apex dashboard sends it to api.<domain>.
+    COOKIE_DOMAIN = ".${var.domain_name}"
   }
 }
 
