@@ -6,9 +6,15 @@
 export const site = {
   name: "Surya Teja Kommuguri",
   // Short, recruiter-facing positioning. One line, no buzzwords.
-  role: "Backend Software Engineer",
+  // Kept broad for SEO/structured data; the hero shows disciplines instead.
+  role: "Software Engineer",
+  // Shown as a live "open to work" status line in the hero.
+  availability: "Open to Software Engineer roles",
+  // Shown under the name, hairline-separated. Role-agnostic on purpose —
+  // open to all SDE tracks. Order signals strength.
+  disciplines: ["Backend", "Full-Stack", "Frontend", "SDE"] as string[],
   tagline:
-    "I build distributed, event-driven backends that stay fast and observable under real load.",
+    "Software Engineer at GE HealthCare. I build distributed, event-driven backends for healthcare platforms — where latency, reliability, and compliance all matter at once.",
   // Used in <title> templates and structured data.
   url: "https://kommugurisuryateja.com",
   location: "Tempe, AZ",
@@ -21,6 +27,8 @@ export const site = {
 export const nav = [
   { label: "Skills", href: "#skills" },
   { label: "Projects", href: "#projects" },
+  { label: "Experience", href: "#experience" },
+  { label: "Education", href: "#education" },
   { label: "About", href: "#about" },
   { label: "Contact", href: "#contact" },
 ] as const;

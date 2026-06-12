@@ -11,12 +11,12 @@ export type Social = {
 export const socials: Social[] = [
   {
     label: "GitHub",
-    href: "https://github.com/your-handle",
+    href: "https://github.com/suryateja213",
     icon: Github,
   },
   {
     label: "LinkedIn",
-    href: "https://www.linkedin.com/in/your-handle",
+    href: "https://www.linkedin.com/in/suryatejakommuguri",
     icon: Linkedin,
   },
   {

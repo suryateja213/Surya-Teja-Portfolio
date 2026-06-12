@@ -6,15 +6,28 @@
 /*
  * Design tokens. Neutral foundation + a single restrained accent.
  * Light and dark are defined together so every surface has both.
+ *
+ * Radius scale (use these stops, nothing in between):
+ *   rounded-md   → controls: buttons, inputs, chips
+ *   rounded-2xl  → glass panels: cards, menus, dialogs
+ *   rounded-full → pills: nav, avatar, status dots
  */
 :root {
-  --background: oklch(0.99 0 0);
+  --background: oklch(0.985 0.004 250);
   --foreground: oklch(0.21 0.01 270);
-  --muted: oklch(0.55 0.01 270);
+  /* L 0.52 keeps muted text ≥ AA on glass surfaces over the ambient field. */
+  --muted: oklch(0.52 0.01 270);
   --border: oklch(0.92 0.005 270);
   --card: oklch(1 0 0);
   --accent: oklch(0.55 0.16 250); /* calm blue */
   --accent-foreground: oklch(0.99 0 0);
+
+  /* Glass surface tokens — translucent fill + edge highlight for frosted panels. */
+  --glass-bg: oklch(1 0 0 / 0.55);
+  --glass-border: oklch(1 0 0 / 0.7);
+  --glass-shadow:
+    0 1px 2px oklch(0.21 0.01 270 / 0.04), 0 8px 24px -8px oklch(0.21 0.01 270 / 0.12);
+  --glass-highlight: oklch(1 0 0 / 0.6);
 }
 
 .dark {
@@ -25,6 +38,12 @@
   --card: oklch(0.21 0.01 270);
   --accent: oklch(0.7 0.14 250);
   --accent-foreground: oklch(0.17 0.01 270);
+
+  /* Glass on a dark base: subtle light film + brighter top edge. */
+  --glass-bg: oklch(0.28 0.01 270 / 0.4);
+  --glass-border: oklch(1 0 0 / 0.1);
+  --glass-shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 12px 32px -8px oklch(0 0 0 / 0.5);
+  --glass-highlight: oklch(1 0 0 / 0.12);
 }
 
 @theme inline {
@@ -38,6 +57,7 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
 
 body {
@@ -45,6 +65,102 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Ambient "fluid glass" backdrop. A fixed, full-viewport field of soft,
+ * low-saturation light blooms that drift slowly — this is what the frosted
+ * (backdrop-blur) pills and cards refract, so they read as real glass rather
+ * than flat paint. Restrained on purpose: a premium ambient field, not a
+ * gradient-blob hero.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -8%;
+  z-index: -1;
+  pointer-events: none;
+  /* NOTE: no background-attachment here — the element is already fixed, and
+     attachment:fixed on an animated layer forces repaints on every scroll
+     frame (visible jank). Transform-only animation keeps it on the GPU. */
+  background:
+    radial-gradient(50rem 38rem at 10% -5%, oklch(0.58 0.19 255 / 0.26), transparent 60%),
+    radial-gradient(46rem 36rem at 95% 8%, oklch(0.62 0.18 330 / 0.2), transparent 60%),
+    radial-gradient(44rem 44rem at 78% 95%, oklch(0.64 0.15 190 / 0.18), transparent 62%),
+    radial-gradient(40rem 40rem at 18% 88%, oklch(0.6 0.16 285 / 0.16), transparent 62%);
+  animation: ambient-drift 32s ease-in-out infinite alternate;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.dark body::before {
+  background:
+    radial-gradient(50rem 38rem at 10% -5%, oklch(0.68 0.18 255 / 0.26), transparent 60%),
+    radial-gradient(46rem 36rem at 95% 8%, oklch(0.7 0.16 330 / 0.2), transparent 60%),
+    radial-gradient(44rem 44rem at 78% 95%, oklch(0.68 0.15 190 / 0.18), transparent 62%),
+    radial-gradient(40rem 40rem at 18% 88%, oklch(0.66 0.16 285 / 0.16), transparent 62%);
+}
+
+@keyframes ambient-drift {
+  0% {
+    transform: translate3d(-1.2%, -0.8%, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(1.2%, 0.8%, 0) scale(1.05);
+  }
+}
+
+/*
+ * glass — the single frosted-panel primitive. Translucent fill over the
+ * ambient field, a backdrop blur+saturate to mimic real glass refraction, a
+ * bright top edge (inset highlight) where light catches, and a soft drop
+ * shadow for lift. Used by cards, the nav, dialogs.
+ *
+ * Declared with @utility (not a plain class) so it lives in the utilities
+ * layer and single-property utilities like `hover:border-accent/40` can
+ * still override individual properties.
+ */
+@utility glass {
+  background-color: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 0 var(--glass-highlight);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  backdrop-filter: blur(16px) saturate(1.6);
+}
+
+/*
+ * glass-subtle — lightweight frosted variant for small, repeated elements
+ * (skill chips, tags). Translucent fill only, no backdrop-filter: dozens of
+ * blur layers on one page would cost real compositing time on low-end
+ * devices, and at chip size the blur is imperceptible anyway.
+ */
+@utility glass-subtle {
+  background-color: var(--glass-bg);
+  border: 1px solid var(--border);
+}
+
+/* Progressive enhancement: only go translucent where blur is supported, so
+   unsupported browsers fall back to a readable solid card instead of washout. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background-color: var(--card);
+  }
+}
+
+/* Honor the OS "reduce transparency" accessibility setting: swap every glass
+   surface for a solid card and stop the ambient drift. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-subtle {
+    background-color: var(--card);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  body::before {
+    animation: none;
+  }
 }
 
 /* Respect users who ask for less motion. */
@@ -61,4 +177,30 @@ body {
 
 html {
   scroll-behavior: smooth;
+  /* Firefox scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Premium details: accent-tinted text selection, quiet overlay scrollbar. */
+::selection {
+  background: oklch(0.55 0.16 250 / 0.22);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: padding-box;
+  border: 2px solid transparent;
 }

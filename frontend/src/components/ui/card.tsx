@@ -1,13 +1,9 @@
 import * as React from "react";
+import { GlassPanel } from "@/components/ui/glass-panel";
 import { cn } from "@/lib/utils";
 
 function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("border-border bg-card rounded-lg border shadow-sm", className)}
-      {...props}
-    />
-  );
+  return <GlassPanel className={className} {...props} />;
 }
 
 function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {

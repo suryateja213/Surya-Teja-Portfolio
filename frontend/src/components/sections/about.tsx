@@ -3,8 +3,8 @@ import { Reveal } from "@/components/ui/reveal";
 
 export function About() {
   return (
-    <Section id="about">
-      <SectionHeading title="About" />
+    <Section id="about" tone="tinted">
+      <SectionHeading eyebrow="Background" title="About" />
       <Reveal>
         <div className="text-muted max-w-2xl space-y-4">
           <p>
@@ -19,8 +19,9 @@ export function About() {
             and code the next person can change without fear.
           </p>
           <p>
-            I&apos;m currently open to backend and platform roles where the problems are real and
-            the bar for engineering is high.
+            I&apos;m currently open to software engineering roles across the stack &mdash; backend,
+            full-stack, or frontend &mdash; anywhere the problems are real and the bar for
+            engineering is high.
           </p>
         </div>
       </Reveal>

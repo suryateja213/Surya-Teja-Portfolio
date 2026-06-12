@@ -12,6 +12,7 @@ export function Projects() {
   return (
     <Section id="projects">
       <SectionHeading
+        eyebrow="Selected work"
         title="Featured projects"
         lead="A few things I've built. Each one solved a concrete problem under real constraints."
       />

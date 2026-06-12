@@ -1,5 +1,6 @@
 import { site } from "@/content/site";
-import { socials } from "@/content/socials";
+import { SocialLinks } from "@/components/layout/social-links";
+import { GlassPanel } from "@/components/ui/glass-panel";
 import { Section, SectionHeading } from "@/components/ui/section";
 import { Reveal } from "@/components/ui/reveal";
 import { ContactForm } from "@/components/sections/contact-form";
@@ -10,11 +11,14 @@ export function Contact() {
       <Reveal>
         <div className="flex flex-col items-start gap-8">
           <SectionHeading
+            eyebrow="Contact"
             title="Get in touch"
             lead="Have a role or a problem worth solving? Send a note, or email me directly."
           />
 
-          <ContactForm />
+          <GlassPanel className="w-full max-w-lg p-6 sm:p-8">
+            <ContactForm />
+          </GlassPanel>
 
           <div className="flex flex-col gap-3">
             <a
@@ -23,23 +27,7 @@ export function Contact() {
             >
               {site.email}
             </a>
-            <ul className="flex flex-wrap items-center gap-4">
-              {socials
-                .filter((s) => s.label !== "Email")
-                .map(({ label, href, icon: Icon }) => (
-                  <li key={label}>
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted hover:text-foreground inline-flex items-center gap-2 text-sm transition-colors"
-                    >
-                      <Icon className="h-4 w-4" aria-hidden />
-                      {label}
-                    </a>
-                  </li>
-                ))}
-            </ul>
+            <SocialLinks variant="labels" exclude={["Email"]} />
           </div>
         </div>
       </Reveal>

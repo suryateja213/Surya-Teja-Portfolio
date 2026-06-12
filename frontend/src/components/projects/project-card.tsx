@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 /** Shared project card used on the home grid and the /projects index. */
 export function ProjectCard({ project }: { project: ProjectMeta }) {
   return (
-    <article className="group border-border bg-card hover:border-accent/50 relative flex h-full flex-col rounded-lg border p-6 transition-colors">
+    <article className="group glass hover:border-accent/50 relative flex h-full flex-col rounded-2xl p-6 transition-[border-color] duration-300">
       <div className="flex items-start justify-between gap-4">
-        <h3 className="text-lg font-semibold tracking-tight">
+        <h3 className="group-hover:text-accent text-lg font-semibold tracking-tight transition-colors duration-300">
           {/* Whole card is clickable via this stretched link. */}
           <Link href={`/projects/${project.slug}`} className="after:absolute after:inset-0">
             {project.title}

@@ -31,7 +31,7 @@ export function ContactForm() {
     return (
       <p
         role="status"
-        className="border-accent/40 bg-card text-foreground rounded-md border px-4 py-3 text-sm"
+        className="glass-subtle border-accent/40 text-foreground rounded-md px-4 py-3 text-sm"
       >
         {state.message}
       </p>
