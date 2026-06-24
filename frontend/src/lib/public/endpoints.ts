@@ -1,7 +1,13 @@
 /** Public API endpoint accessors, mirroring `src/lib/admin/endpoints.ts`. */
 
 import { publicFetch } from "@/lib/public/api";
-import type { ActivityEvent, AskAnswer, Page, SkillGraph } from "@/lib/public/types";
+import type {
+  ActivityEvent,
+  AskAnswer,
+  Page,
+  PublicStats,
+  SkillGraph,
+} from "@/lib/public/types";
 
 export const skillGraphApi = {
   get: () => publicFetch<SkillGraph>("/v1/skill-graph"),
@@ -22,4 +28,8 @@ export const eventsApi = {
     publicFetch<Page<ActivityEvent>>(`/v1/events/recent?limit=${limit}`, {
       timeoutMs: 6000,
     }),
+};
+
+export const statsApi = {
+  get: () => publicFetch<PublicStats>("/v1/stats", { timeoutMs: 6000 }),
 };

@@ -56,3 +56,19 @@ export type Page<T> = {
   items: T[];
   next_cursor: string | null;
 };
+
+/** AI latency stats from `GET /v1/stats` (milliseconds). */
+export type LatencyStats = {
+  p50: number;
+  p95: number;
+  samples: number;
+};
+
+/** Public observability stats — safe to render on the site (no spend cap, no PII). */
+export type PublicStats = {
+  day: string;
+  events_total: number;
+  by_type: Record<string, number>;
+  ai_queries_today: number;
+  ai_latency: LatencyStats;
+};
