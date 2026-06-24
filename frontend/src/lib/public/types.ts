@@ -42,3 +42,17 @@ export type AskAnswer = {
   sources: AskCitation[];
   relatedSkills: string[];
 };
+
+/** A public-safe event from `GET /v1/events/recent` (no PII). */
+export type ActivityEvent = {
+  id: string;
+  type: string;
+  target?: string | null;
+  created_at: string;
+};
+
+/** A page envelope from the API (mirrors backend `Page[T]`). */
+export type Page<T> = {
+  items: T[];
+  next_cursor: string | null;
+};
