@@ -129,6 +129,11 @@ jobs:
       - run: ruff format --check .
       - run: mypy app
       - run: pytest
+      # The committed RAG index must match the content it's built from.
+      - name: Verify RAG index is up to date
+        run: |
+          python scripts/build_rag_index.py
+          git diff --exit-code app/rag/index.json
 
   backend-deploy:
     needs: backend-ci
@@ -168,6 +173,15 @@ jobs:
           aws lambda wait function-updated \
             --function-name "${{ vars.LAMBDA_FUNCTION_NAME }}"
 
+      # The worker runs the SAME artifact, different handler (app.worker.handler).
+      - name: Deploy worker Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ vars.LAMBDA_WORKER_FUNCTION_NAME }}" \
+            --zip-file fileb://build/function.zip
+          aws lambda wait function-updated \
+            --function-name "${{ vars.LAMBDA_WORKER_FUNCTION_NAME }}"
+
       - name: Smoke test
         run: |
           set -e
@@ -204,3 +218,5 @@ jobs:
         env:
           TF_VAR_jwt_secret: ${{ secrets.TF_VAR_JWT_SECRET }}
           TF_VAR_admin_password_hash: ${{ secrets.TF_VAR_ADMIN_PASSWORD_HASH }}
+          # Optional — empty disables Ask Surya AI gracefully. Set the GH secret to enable.
+          TF_VAR_anthropic_api_key: ${{ secrets.TF_VAR_ANTHROPIC_API_KEY }}

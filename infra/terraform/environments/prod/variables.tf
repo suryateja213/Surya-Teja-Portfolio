@@ -33,6 +33,13 @@ variable "admin_password_hash" {
   sensitive   = true
 }
 
+variable "anthropic_api_key" {
+  description = "Anthropic API key for Ask Surya AI. Empty disables /ask gracefully."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 # ---- Optional knobs ----
 
 variable "table_name" {

@@ -14,6 +14,7 @@ export function Projects() {
       <SectionHeading
         eyebrow="Selected work"
         title="Featured projects"
+        displayClass="font-display-projects"
         lead="A few things I've built. Each one solved a concrete problem under real constraints."
       />
       <div className="grid gap-6 sm:grid-cols-2">

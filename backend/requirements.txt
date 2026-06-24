@@ -9,3 +9,7 @@ python-jose[cryptography]==3.3.0
 bcrypt==4.2.1
 python-ulid==3.0.0
 email-validator==2.2.0
+# Ask Surya AI. Pure-python wheel; its compiled transitives (pydantic-core via
+# pydantic, jiter) ship cp312 manylinux2014 wheels, so the CI --only-binary
+# build resolves cleanly for the Lambda runtime.
+anthropic==0.112.0

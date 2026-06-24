@@ -7,6 +7,12 @@ resource "aws_dynamodb_table" "this" {
   hash_key     = "PK"
   range_key    = "SK"
 
+  # Stream powers the serverless-native event pipeline: EVENT writes are fanned
+  # out to the worker Lambda, which derives the daily METRIC counters. NEW_IMAGE
+  # carries the full new item so the worker needs no follow-up read.
+  stream_enabled   = true
+  stream_view_type = "NEW_IMAGE"
+
   attribute {
     name = "PK"
     type = "S"

@@ -51,13 +51,31 @@ Premium, minimal, product-quality, developer-centric. Think Linear / Vercel / St
 
 - Restrained palette, generous whitespace, strong typographic hierarchy.
 - Motion is purposeful and subtle (entrance fades, micro-interactions) — never decorative noise.
-- **Avoid generic AI-portfolio clichés**: gratuitous gradient blobs, glassmorphism everywhere, "Hi, I'm [name] 👋" with a waving emoji, animated particle backgrounds, neon-on-black, fake testimonials.
+- **Avoid generic AI-portfolio clichés**: gratuitous gradient blobs, glassmorphism everywhere, "Hi, I'm [name] 👋" with a waving emoji, dense/neon particle fields, neon-on-black, fake testimonials. (The subtle monochrome ambient particle field is the one approved exception — user reversed the particle ban in June 2026; see design system.)
 
 ## Design system (locked — June 2026)
 
-The visual language is **Apple-style fluid glass**: a fixed, slowly drifting ambient
-field of soft color blooms (`body::before` in `globals.css`) refracted through frosted
-surfaces. Everything below is settled; extend it, don't reinvent it.
+The visual language is **Apple-style fluid glass over graphite monochrome**: a fixed,
+subtle WebGL particle field (with the CSS blooms in `body::before` as fallback)
+refracted through frosted surfaces. Everything below is settled; extend it, don't
+reinvent it.
+
+- **Color is graphite monochrome — no blue, ever** (user banned blue in June 2026).
+  Light: warm paper bg, graphite `--accent` (near-black). Dark: near space-black bg,
+  silver-white `--accent`. Depth and light do the work, not hue. The only chroma is
+  `--success` (status green) — scope: availability/online dots ONLY, never a second
+  accent. Ambient layers stay chroma ≤ 0.015.
+- **Ambient field**: `<AmbientParticles>` (`src/components/layout/ambient-particles*.tsx`)
+  — sparse monochrome three.js particles, slow drift, damped pointer parallax,
+  theme-aware. Gated: not mounted under `prefers-reduced-motion` or without WebGL;
+  the re-graded CSS blooms in `body::before` remain as fallback and cross-fade out
+  via the `particles-active` class on `<html>`. three.js loads lazily (`ssr: false`)
+  — never put it in the initial bundle. Keep it *subtle*: low count (≤700), dim, no
+  scroll coupling, frameloop paused when the tab is hidden.
+- **Hero name entrance**: particles assemble into the name, then cross-fade to the
+  real `<h1>` (`hero-name-particles.tsx`, 2D canvas, entrance-only, unmounts after).
+  First desktop visit only; mobile keeps the word-by-word reveal; reduced-motion /
+  revisit renders instantly crisp. The real h1 is always in the DOM.
 
 - **Glass surfaces**: `glass` (full frosted panel: blur + saturate, inset top highlight,
   lift shadow) and `glass-subtle` (translucent fill only, for small repeated chips).
@@ -67,9 +85,15 @@ surfaces. Everything below is settled; extend it, don't reinvent it.
   `Card` consumes it.
 - **Radius scale** (only these stops): `rounded-md` controls · `rounded-2xl` glass
   panels · `rounded-full` pills (nav, avatar).
-- **Typography**: Space Grotesk (`font-display`) for the hero name and section
-  headings; Geist Sans for text; Geist Mono for eyebrows, status lines, the terminal
-  card. Section headings use a mono uppercase accent eyebrow via `SectionHeading`'s
+- **Typography**: Geist Sans for body text, Geist Mono for eyebrows, status lines and
+  the terminal card — these never change. Each section *heading* has its own display
+  face (all loaded in `src/app/fonts.ts`, mapped to `font-display-*` utilities in
+  `globals.css`, passed via `SectionHeading`'s `displayClass` prop):
+  hero/contact → Space Grotesk (`font-display`, default) · projects → Bricolage
+  Grotesque · skills → Sora · experience → Instrument Serif (400 only — always pair
+  with `font-normal`, never synthetic-bold) · education → Fraunces · about →
+  Newsreader (medium italic). Headings only — body copy never changes family.
+  Section headings use a mono uppercase accent eyebrow via `SectionHeading`'s
   `eyebrow` prop.
 - **Hero is role-agnostic**: the user targets *all* SDE tracks (backend / full-stack /
   frontend). Never pin a single role; disciplines render as a hairline-separated line.

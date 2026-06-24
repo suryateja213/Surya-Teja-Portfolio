@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { AmbientParticles } from "@/components/layout/ambient-particles";
 
 export default function PublicLayout({
   children,
@@ -14,6 +15,7 @@ export default function PublicLayout({
       >
         Skip to content
       </a>
+      <AmbientParticles />
       <Navbar />
       <main id="main" className="flex-1">
         {children}

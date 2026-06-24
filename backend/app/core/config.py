@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     cookie_secure: bool = True
     cookie_samesite: str = "none"
 
+    # Ask Surya AI (RAG over portfolio content via Anthropic Claude).
+    # The key is set in Lambda env in prod; empty locally means the /ask endpoint
+    # reports "unavailable" instead of calling out.
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-haiku-4-5"
+    # Hard daily ceiling on AI questions answered, enforced via a DynamoDB
+    # counter — caps Anthropic spend regardless of traffic.
+    ai_daily_cap: int = 200
+
     # CORS — comma-separated origins in the env var, parsed to a list.
     # NoDecode disables pydantic-settings' JSON pre-parse so the validator below
     # can split the plain comma-separated string.

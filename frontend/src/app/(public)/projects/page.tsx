@@ -32,7 +32,7 @@ export default function ProjectsIndexPage() {
 
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
         {projects.map((project) => (
-          <ProjectCard key={project.slug} project={project} />
+          <ProjectCard key={project.slug} project={project} from="index" />
         ))}
       </div>
     </div>

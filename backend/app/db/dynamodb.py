@@ -55,4 +55,24 @@ def content_pk(key: str) -> str:
     return f"CONTENT#{key}"
 
 
+def event_pk(event_id: str) -> str:
+    """Recruiter-journey event (GSI1PK="EVENT", GSI1SK=<createdAt>)."""
+    return f"EVENT#{event_id}"
+
+
+def aiquery_pk(query_id: str) -> str:
+    """AI-query log item (GSI1PK="AIQUERY", GSI1SK=<createdAt>)."""
+    return f"AIQUERY#{query_id}"
+
+
+def aibudget_pk(day: str) -> str:
+    """Daily AI spend-cap counter, e.g. AIBUDGET#2026-06-24 (no GSI)."""
+    return f"AIBUDGET#{day}"
+
+
+def metric_pk(day: str) -> str:
+    """Worker-derived daily metric counters, e.g. METRIC#2026-06-24 (no GSI)."""
+    return f"METRIC#{day}"
+
+
 META_SK = "META"

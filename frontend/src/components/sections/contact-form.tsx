@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
 import { submitContact, type ContactState } from "@/lib/contact-api";
+import { useTrack } from "@/lib/analytics/use-track";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +13,7 @@ const fieldClass =
 export function ContactForm() {
   const [state, setState] = useState<ContactState>({ status: "idle" });
   const [pending, setPending] = useState(false);
+  const track = useTrack();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,6 +27,8 @@ export function ContactForm() {
     });
     setPending(false);
     setState(result);
+    // Fire-and-forget; payload carries only the outcome, never form contents.
+    track({ name: "contact.submitted", props: { ok: result.status === "success" } });
   }
 
   if (state.status === "success") {

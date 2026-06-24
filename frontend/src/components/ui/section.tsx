@@ -32,10 +32,18 @@ export function SectionHeading({
   title,
   lead,
   eyebrow,
+  displayClass,
 }: {
   title: string;
   lead?: string;
   eyebrow?: string;
+  /**
+   * Per-section display face for the title (e.g. "font-display-projects"),
+   * may include weight/style tweaks the face needs ("font-normal", "italic").
+   * Defaults to the site-wide display face. Heading only — body copy never
+   * changes family.
+   */
+  displayClass?: string;
 }) {
   return (
     <div className="mb-12 max-w-2xl">
@@ -47,6 +55,7 @@ export function SectionHeading({
       <h2
         className={cn(
           "font-display text-3xl font-semibold tracking-tight sm:text-4xl",
+          displayClass,
           eyebrow && "mt-3",
         )}
       >

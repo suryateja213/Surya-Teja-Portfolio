@@ -1,4 +1,5 @@
 import { Hero } from "@/components/sections/hero";
+import { AskSurya } from "@/components/sections/ask/ask-surya";
 import { Skills } from "@/components/sections/skills";
 import { Projects } from "@/components/sections/projects";
 import { Experience } from "@/components/sections/experience";
@@ -12,6 +13,7 @@ export default function Home() {
     <>
       <JsonLd />
       <Hero />
+      <AskSurya />
       <Skills />
       <Projects />
       <Experience />

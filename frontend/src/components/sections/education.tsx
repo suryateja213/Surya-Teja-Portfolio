@@ -7,7 +7,7 @@ import { Reveal } from "@/components/ui/reveal";
 export function Education() {
   return (
     <Section id="education">
-      <SectionHeading eyebrow="Education" title="Education" />
+      <SectionHeading eyebrow="Education" title="Education" displayClass="font-display-education" />
       <div className="flex flex-col gap-4">
         {education.map((entry) => (
           <Reveal key={entry.school}>

@@ -1,11 +1,13 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import { site } from "@/content/site";
 import { Button } from "@/components/ui/button";
 import { SocialLinks } from "@/components/layout/social-links";
-import { useIntroState } from "@/lib/use-intro-state";
+import { HeroNameParticles } from "@/components/sections/hero-name-particles";
+import { useHeroNameFx, useIntroState } from "@/lib/use-intro-state";
 
 // Parent controls the cascade. Children animate in sequence on first visit.
 const container: Variants = {
@@ -45,6 +47,9 @@ const terminalLines: { cmd: string; out: string }[] = [
   { cmd: "stack --top", out: "python · typescript · kafka · aws" },
 ];
 
+const nameClass =
+  "font-display text-5xl leading-[1.02] font-medium tracking-[-0.03em] sm:text-6xl lg:text-7xl";
+
 export function Hero() {
   const intro = useIntroState();
 
@@ -53,6 +58,14 @@ export function Hero() {
   const animate = intro === "play" ? "show" : intro === "skip" ? "show" : "hidden";
   // On skip we want no motion, so collapse transitions to instant.
   const instant = intro === "skip";
+
+  // Name entrance: on first desktop visit, particles assemble into the name
+  // and cross-fade to the crisp h1 (decision shares the intro store so it's
+  // settled before first paint — no flash of the word-reveal beforehand).
+  const fx = useHeroNameFx();
+  const [nameSettled, setNameSettled] = useState(false);
+  const [fxDone, setFxDone] = useState(false);
+  const nameRef = useRef<HTMLHeadingElement>(null);
 
   return (
     <motion.section
@@ -70,26 +83,65 @@ export function Hero() {
             transition={instant ? { duration: 0 } : undefined}
           >
             <span className="relative flex h-2 w-2" aria-hidden>
-              <span className="bg-accent absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 motion-reduce:hidden" />
-              <span className="bg-accent relative inline-flex h-2 w-2 rounded-full" />
+              <span className="bg-success absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 motion-reduce:hidden" />
+              <span className="bg-success relative inline-flex h-2 w-2 rounded-full" />
             </span>
             {site.availability}
           </motion.p>
 
-          <motion.h1
-            className="font-display mt-6 text-5xl leading-[1.02] font-medium tracking-[-0.03em] sm:text-6xl lg:text-7xl"
-            variants={instant ? item : nameContainer}
-            transition={instant ? { duration: 0 } : undefined}
-          >
-            {instant
-              ? site.name
-              : site.name.split(" ").map((w, i) => (
-                  <motion.span key={`${w}-${i}`} variants={word} className="inline-block">
+          {fx === "plain" ? (
+            <motion.h1
+              className={`mt-6 ${nameClass}`}
+              variants={instant ? item : nameContainer}
+              initial="hidden"
+              animate="show"
+              transition={instant ? { duration: 0 } : undefined}
+            >
+              {instant
+                ? site.name
+                : site.name.split(" ").map((w, i) => (
+                    /* whitespace-pre keeps the trailing space from collapsing
+                       at the end of the inline-block — without it the words
+                       render joined ("SuryaTeja"). */
+                    <motion.span
+                      key={`${w}-${i}`}
+                      variants={word}
+                      className="inline-block whitespace-pre"
+                    >
+                      {w}
+                      {i < site.name.split(" ").length - 1 ? " " : ""}
+                    </motion.span>
+                  ))}
+            </motion.h1>
+          ) : (
+            <div className="relative mt-6">
+              <motion.h1
+                ref={nameRef}
+                className={nameClass}
+                initial={{ opacity: 0, filter: "blur(10px)" }}
+                animate={
+                  nameSettled
+                    ? { opacity: 1, filter: "blur(0px)" }
+                    : { opacity: 0, filter: "blur(10px)" }
+                }
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {site.name.split(" ").map((w, i) => (
+                  <span key={`${w}-${i}`} data-name-word className="inline-block whitespace-pre">
                     {w}
                     {i < site.name.split(" ").length - 1 ? " " : ""}
-                  </motion.span>
+                  </span>
                 ))}
-          </motion.h1>
+              </motion.h1>
+              {fx === "particles" && !fxDone && (
+                <HeroNameParticles
+                  targetRef={nameRef}
+                  onSettled={() => setNameSettled(true)}
+                  onDone={() => setFxDone(true)}
+                />
+              )}
+            </div>
+          )}
 
           <motion.div
             className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2"
@@ -146,7 +198,7 @@ export function Hero() {
               <span className="flex gap-1.5" aria-hidden>
                 <span className="bg-border h-2.5 w-2.5 rounded-full" />
                 <span className="bg-border h-2.5 w-2.5 rounded-full" />
-                <span className="bg-accent/60 h-2.5 w-2.5 rounded-full" />
+                <span className="bg-success/60 h-2.5 w-2.5 rounded-full" />
               </span>
               <p className="text-muted ml-2 font-mono text-xs">~/surya</p>
             </div>

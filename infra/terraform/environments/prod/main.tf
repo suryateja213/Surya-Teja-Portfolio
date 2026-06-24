@@ -52,6 +52,21 @@ module "lambda" {
     ALLOWED_ORIGINS     = "https://${var.domain_name},https://www.${var.domain_name}"
     # Cross-subdomain session cookie: the apex dashboard sends it to api.<domain>.
     COOKIE_DOMAIN = ".${var.domain_name}"
+    # Ask Surya AI (Anthropic Claude). Empty disables /ask gracefully.
+    ANTHROPIC_API_KEY = var.anthropic_api_key
+  }
+}
+
+# Worker Lambda: consumes the table stream and derives daily METRIC counters.
+# Same code artifact as the API function (CI ships both), different handler.
+module "lambda_worker" {
+  source        = "../../modules/lambda_worker"
+  function_name = "${var.table_name}-worker"
+  table_arn     = module.dynamodb.table_arn
+  stream_arn    = module.dynamodb.stream_arn
+
+  environment = {
+    TABLE_NAME = module.dynamodb.table_name
   }
 }
 
@@ -100,6 +115,7 @@ module "github_oidc" {
   frontend_bucket_arn         = module.s3_frontend.bucket_arn
   cloudfront_distribution_arn = module.cloudfront.distribution_arn
   lambda_function_arn         = module.lambda.function_arn
+  worker_function_arn         = module.lambda_worker.function_arn
   state_bucket_arn            = var.state_bucket_arn
   lock_table_arn              = var.lock_table_arn
 }

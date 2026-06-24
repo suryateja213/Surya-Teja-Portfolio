@@ -10,6 +10,7 @@ export function Experience() {
       <SectionHeading
         eyebrow="Experience"
         title="Where I've shipped"
+        displayClass="font-display-experience font-normal"
         lead="Impact, not job descriptions — the numbers are verifiable against the case studies."
       />
       <div className="flex flex-col gap-6">

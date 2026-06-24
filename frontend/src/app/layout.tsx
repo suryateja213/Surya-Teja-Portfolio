@@ -1,25 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { fontVariables } from "./fonts";
 import { site } from "@/content/site";
 import { ThemeProvider } from "@/components/layout/theme-provider";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Display face for the name and section headings — clean geometric grotesque,
-// distinct from the body sans without breaking the minimal system.
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-display",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -51,11 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
-    >
+    <html lang="en" suppressHydrationWarning className={`${fontVariables} h-full antialiased`}>
       <head>
         {/* If JS is disabled, the hero's motion never resolves — force it visible. */}
         <noscript>

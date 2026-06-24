@@ -34,6 +34,11 @@ variable "lambda_function_arn" {
   type = string
 }
 
+variable "worker_function_arn" {
+  description = "Worker Lambda ARN — CI updates its code alongside the API function."
+  type        = string
+}
+
 # State resources the terraform role needs.
 variable "state_bucket_arn" {
   type = string

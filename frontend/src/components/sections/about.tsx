@@ -4,7 +4,11 @@ import { Reveal } from "@/components/ui/reveal";
 export function About() {
   return (
     <Section id="about" tone="tinted">
-      <SectionHeading eyebrow="Background" title="About" />
+      <SectionHeading
+        eyebrow="Background"
+        title="About"
+        displayClass="font-display-about font-medium italic"
+      />
       <Reveal>
         <div className="text-muted max-w-2xl space-y-4">
           <p>

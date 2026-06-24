@@ -25,6 +25,7 @@ export const site = {
 } as const;
 
 export const nav = [
+  { label: "Ask AI", href: "#ask" },
   { label: "Skills", href: "#skills" },
   { label: "Projects", href: "#projects" },
   { label: "Experience", href: "#experience" },

@@ -79,7 +79,8 @@ data "aws_iam_policy_document" "deploy" {
       # `aws lambda wait function-updated` polls this:
       "lambda:GetFunctionConfiguration",
     ]
-    resources = [var.lambda_function_arn]
+    # CI ships the same artifact to both the API and the worker function.
+    resources = [var.lambda_function_arn, var.worker_function_arn]
   }
 }
 
